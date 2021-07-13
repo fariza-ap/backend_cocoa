@@ -154,6 +154,29 @@ def get_otoritas_user(user_id):
         return None
     else:
         return c[0]
-                
-              
+
+
+def verified_token(token):
+    db = sql_connection()
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT `user_id` FROM `tb_user` WHERE `token`=%s",(token,))
+        c = cursor.fetchone()
+    except(mysql.connector.Error,mysql.connector.Warning) as e:
+        print(e)
+        c = None
+    if c==None:
+        return False
+    else:
+        return True
+
+def update_last_login_base_on_token(token):
+    db = sql_connection()
+    cursor = db.cursor()
+    try:
+        cursor.execute("UPDATE `tb_user` SET `dt_last_login`=now() WHERE `token`=%s")
+        db.commit()
+    except(mysql.connector.Error,mysql.connector.Warning) as e:
+        print(e)
+        
     

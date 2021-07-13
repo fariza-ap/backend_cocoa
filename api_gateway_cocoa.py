@@ -76,7 +76,41 @@ def login_user():
                           "otoritas":otoritas}
                 resp = jsonify(result)
                 return resp,200
-        
+
+
+@app.route('/cocoa/user/verify',methods=['POST'])
+def user_verify():
+    try:
+        json_data = request.json
+    except ValueError as e:
+        result = {"message":e}
+        resp = jsonify(result)
+        return resp,500
+    
+    if json_data==None:
+        result = {"message":"Null Json"}
+        resp = jsonify(result)
+        return resp,400
+    else:
+        if 'token' not in json_data:
+            result = {"message":"Request error"}
+            resp = jsonify(result)
+            return resp,401
+        else:
+            token = json_data['token']
+            cek = verified_token(token)
+            if cek == False:
+                result = {"message":"Forbidden"}
+                resp = jsonify(result)
+                return resp,403
+            else:
+                
+                compare = compare_date(token)
+                if compare==False:
+                    result = {"message":"Token expired"}
+                    resp = jsonify(result)
+                    return resp,202
+
 
                         
         
