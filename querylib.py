@@ -39,7 +39,13 @@ def get_user_id_base_username_and_password(username,password):
         print(e)
         c = e
         set = False
-    return set,c
+    if set==False:
+        return None
+    else:
+        if c==None:
+            return None
+        else:
+            return c[0]
     
 
 def update_token_base_user_id(user_id):
@@ -60,6 +66,7 @@ def update_token_base_user_id(user_id):
             db.commit()
         except(mysql.connector.Error,mysql.connector.Warning) as e:
             print(e)
+    return token
         
 def verified_token(token):
     db = sql_connection()
@@ -133,6 +140,20 @@ def gen_id_user(otoritas):
     data = str(uuid4().hex)
     result = oto+"-"+data
     return result
-            
+
+def get_otoritas_user(user_id):
+    db = sql_connection()
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT `otoritas` FROM `tb_user` WHERE `user_id`=%s",(user_id,))
+        c = cursor.fetchone()
+    except(mysql.connector.Error,mysql.connector.Warning) as e:
+        print(e)
+        c = None
+    if c==None:
+        return None
+    else:
+        return c[0]
+                
               
     
