@@ -1,7 +1,7 @@
 from logging import info
 from flask import Flask,request,jsonify
 import hashlib
-from querylib import gen_id_user, get_otoritas_user, input_user,get_user_id_base_username_and_password,verified_token
+from querylib import gen_id_user, get_otoritas_user, input_user,get_user_id_base_username_and_password, update_last_login_base_on_token,verified_token
 from querylib import compare_date,update_left_time_token,update_token_base_user_id
 
 app = Flask(__name__)
@@ -98,22 +98,26 @@ def user_verify():
             return resp,401
         else:
             token = json_data['token']
-            cek = verified_token(token)
+            cek,user_id = verified_token(token)
             if cek == False:
                 result = {"message":"Forbidden"}
                 resp = jsonify(result)
                 return resp,403
             else:
-                
+                update_last_login_base_on_token(token)
                 compare = compare_date(token)
                 if compare==False:
                     result = {"message":"Token expired"}
                     resp = jsonify(result)
                     return resp,202
-
-
-                        
-        
+                else:
+                    update_left_time_token(token)
+                    otoritas = get_otoritas_user(user_id)
+                    result = {"message":"Account Verified",
+                              "otoritas":otoritas}
+                    resp = jsonify(result)
+                    return resp,200
+                
 if __name__ == '__main__':
     # serve(app, host="0.0.0.0", port=9001)
     app.run(port=9001, debug=True)
