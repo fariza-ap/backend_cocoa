@@ -1,8 +1,7 @@
 import mysql.connector
 import json
 import secrets
-
-from mysql.connector import cursor
+from uuid import uuid4
 
 def sql_connection():
     sql = mysql.connector.connect(host="localhost",
@@ -122,5 +121,18 @@ def compare_date(token):
         return False
     else:
         return True
+
+def gen_id_user(otoritas):
+    oto = ''
+    if otoritas==0:
+        oto = 'ADM'
+    elif otoritas==1:
+        oto = 'FAM'
+    else:
+        oto = "CUS"
+    data = str(uuid4().hex)
+    result = oto+"-"+data
+    return result
+            
               
     
