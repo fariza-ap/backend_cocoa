@@ -1,7 +1,7 @@
 from logging import info
 from flask import Flask,request,jsonify
 import hashlib
-from querylib import gen_id_user, get_otoritas_user, input_user,get_user_id_base_username_and_password, update_last_login_base_on_token,verified_token
+from querylib import cek_status_user, gen_id_user, get_otoritas_user, input_user,get_user_id_base_username_and_password, update_last_login_base_on_token,verified_token
 from querylib import compare_date,update_left_time_token,update_token_base_user_id
 
 app = Flask(__name__)
@@ -69,19 +69,25 @@ def login_user():
                 resp = jsonify(result)
                 return resp,203
             else:
-                token = update_token_base_user_id(user_id)
-                otoritas = get_otoritas_user(user_id)
-                result = {"message":"OK",
-                          "token":token,
-                          "otoritas":otoritas}
-                resp = jsonify(result)
-                return resp,200
+                cek_status,status = cek_status_user(user_id)
+                if cek_status==False:
+                    result = {"message":"User status "+status}
+                    resp = jsonify(result)
+                    return resp,203
+                else:
+                    token = update_token_base_user_id(user_id)
+                    otoritas = get_otoritas_user(user_id)
+                    result = {"message":"OK",
+                              "token":token,
+                              "otoritas":otoritas}
+                    resp = jsonify(result)
+                    return resp,200
 
 
 @app.route('/cocoa/user/verify',methods=['POST'])
 def user_verify():
     try:
-        json_data = request.json
+        json_data = request.headers
     except ValueError as e:
         result = {"message":e}
         resp = jsonify(result)
@@ -104,19 +110,25 @@ def user_verify():
                 resp = jsonify(result)
                 return resp,403
             else:
-                update_last_login_base_on_token(token)
-                compare = compare_date(token)
-                if compare==False:
-                    result = {"message":"Token expired"}
+                cek_status,status = cek_status_user(user_id)
+                if cek_status==False:
+                    result={"message":"User status "+status}
                     resp = jsonify(result)
-                    return resp,202
+                    return resp,203
                 else:
-                    update_left_time_token(token)
-                    otoritas = get_otoritas_user(user_id)
-                    result = {"message":"Account Verified",
-                              "otoritas":otoritas}
-                    resp = jsonify(result)
-                    return resp,200
+                    update_last_login_base_on_token(token)
+                    compare = compare_date(token)
+                    if compare==False:
+                        result = {"message":"Token expired"}
+                        resp = jsonify(result)
+                        return resp,203
+                    else:
+                        update_left_time_token(token)
+                        otoritas = get_otoritas_user(user_id)
+                        result = {"message":"Account Verified",
+                                  "otoritas":otoritas}
+                        resp = jsonify(result)
+                        return resp,200
                 
 if __name__ == '__main__':
     # serve(app, host="0.0.0.0", port=9001)

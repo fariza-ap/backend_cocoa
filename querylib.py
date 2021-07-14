@@ -180,4 +180,25 @@ def update_last_login_base_on_token(token):
     except(mysql.connector.Error,mysql.connector.Warning) as e:
         print(e)
         
-    
+def cek_status_user(user_id):
+    db = sql_connection()
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT tb_user.`status`,tb_status_user.status FROM `tb_user` INNER JOIN tb_status_user ON tb_user.status=tb_status_user.id WHERE user_id=%s",(user_id,))
+        c = cursor.fetchone()
+    except(mysql.connector.Error,mysql.connector.Warning) as e:
+        print(e)
+        c = None
+    if c == None:
+        set = False
+        result = "No-Status"
+    else:
+        status = int(c[0])
+        result = c[1]
+        if status==0 or status ==2:
+            set = False
+        else:
+            set = True
+    return set,result 
+            
+        
