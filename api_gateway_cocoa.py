@@ -92,43 +92,37 @@ def user_verify():
         result = {"message":e}
         resp = jsonify(result)
         return resp,500
-    
-    if json_data==None:
-        result = {"message":"Null Json"}
+    if 'token' not in json_data:
+        result = {"message":"Request error"}
         resp = jsonify(result)
-        return resp,400
+        return resp,401
     else:
-        if 'token' not in json_data:
-            result = {"message":"Request error"}
+        token = json_data['token']
+        cek,user_id = verified_token(token)
+        if cek == False:
+            result = {"message":"Forbidden"}
             resp = jsonify(result)
-            return resp,401
+            return resp,403
         else:
-            token = json_data['token']
-            cek,user_id = verified_token(token)
-            if cek == False:
-                result = {"message":"Forbidden"}
+            cek_status,status = cek_status_user(user_id)
+            if cek_status==False:
+                result={"message":"User status "+status}
                 resp = jsonify(result)
-                return resp,403
+                return resp,203
             else:
-                cek_status,status = cek_status_user(user_id)
-                if cek_status==False:
-                    result={"message":"User status "+status}
+                update_last_login_base_on_token(token)
+                compare = compare_date(token)
+                if compare==False:
+                    result = {"message":"Token expired"}
                     resp = jsonify(result)
                     return resp,203
                 else:
-                    update_last_login_base_on_token(token)
-                    compare = compare_date(token)
-                    if compare==False:
-                        result = {"message":"Token expired"}
-                        resp = jsonify(result)
-                        return resp,203
-                    else:
-                        update_left_time_token(token)
-                        otoritas = get_otoritas_user(user_id)
-                        result = {"message":"Account Verified",
-                                  "otoritas":otoritas}
-                        resp = jsonify(result)
-                        return resp,200
+                    update_left_time_token(token)
+                    otoritas = get_otoritas_user(user_id)
+                    result = {"message":"Account Verified",
+                              "otoritas":otoritas}
+                    resp = jsonify(result)
+                    return resp,200
                 
 if __name__ == '__main__':
     # serve(app, host="0.0.0.0", port=9001)
