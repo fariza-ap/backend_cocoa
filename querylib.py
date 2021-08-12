@@ -201,4 +201,5 @@ def cek_status_user(user_id):
             set = True
     return set,result 
             
-        
+def test():
+    return "test"
